@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatRoom</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-info {
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: white;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .users-sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            color: white;
+        }
+
+        .users-sidebar h3 {
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .user-list {
+            list-style: none;
+        }
+
+        .user-list li {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-list li:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .user-list li.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: bold;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.own {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.other {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+
+        .message.admin {
+            background: rgba(255, 215, 0, 0.3);
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            color: white;
+            max-width: 100%;
+        }
+
+        .message-info {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .message-content {
+            font-size: 14px;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+        }
+
+        .message-input:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .send-btn {
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .admin-indicator {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: #ff6b6b;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loginScreen" class="login-form">
+            <div class="login-box">
+                <h2>ChatRoom Anmeldung</h2>
+                <div class="form-group">
+                    <label for="username">Benutzername:</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Passwort:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button class="login-btn" onclick="login()">Anmelden</button>
+                <div id="loginError" class="error hidden">Ungültige Anmeldedaten!</div>
+            </div>
+        </div>
+
+        <div id="chatScreen" class="hidden">
+            <div class="header">
+                <div class="logo">ChatRoom</div>
+                <div class="user-info">
+                    <span id="currentUser"></span>
+                    <span id="adminBadge" class="admin-indicator hidden">ADMIN</span>
+                    <button class="logout-btn" onclick="logout()">Abmelden</button>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="users-sidebar">
+                    <h3>Online Benutzer</h3>
+                    <ul id="usersList" class="user-list"></ul>
+                </div>
+
+                <div class="chat-area">
+                    <div class="chat-header">
+                        <span id="chatTitle">Öffentlicher Chat</span>
+                    </div>
+                    <div id="messages" class="messages"></div>
+                    <div class="input-area">
+                        <input type="text" id="messageInput" class="message-input" placeholder="Nachricht eingeben..." onkeypress="handleKeyPress(event)">
+                        <button class="send-btn" onclick="sendMessage()">Senden</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulierte Datenbank im Browser-Speicher
+        let users = {
+            'HADI': { password: 'hadialy123', isAdmin: true },
+            'testuser': { password: 'test123', isAdmin: false }
+        };
+
+        let messages = [];
+        let onlineUsers = new Set();
+        let currentUser = null;
+        let selectedChat = 'public';
+
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('loginError');
+
+            // Neuen Benutzer registrieren falls nicht vorhanden
+            if (!users[username]) {
+                if (username && password) {
+                    users[username] = { password: password, isAdmin: false };
+                } else {
+                    errorDiv.textContent = 'Benutzername und Passwort erforderlich!';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+            }
+
+            // Passwort prüfen
+            if (users[username].password === password) {
+                currentUser = username;
+                onlineUsers.add(username);
+                
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('chatScreen').classList.remove('hidden');
+                document.getElementById('currentUser').textContent = username;
+                
+                if (users[username].isAdmin) {
+                    document.getElementById('adminBadge').classList.remove('hidden');
+                }
+                
+                updateUsersList();
+                loadMessages();
+                errorDiv.classList.add('hidden');
+            } else {
+                errorDiv.textContent = 'Ungültige Anmeldedaten!';
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            onlineUsers.delete(currentUser);
+            currentUser = null;
+            selectedChat = 'public';
+            
+            document.getElementById('chatScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('adminBadge').classList.add('hidden');
+            
+            // Felder leeren
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('messageInput').value = '';
+        }
+
+        function updateUsersList() {
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
+            
+            // Öffentlicher Chat
+            const publicItem = document.createElement('li');
+            publicItem.textContent = '📢 Öffentlicher Chat';
+            publicItem.onclick = () => selectChat('public');
+            if (selectedChat === 'public') publicItem.classList.add('active');
+            usersList.appendChild(publicItem);
+            
+            // Online Benutzer
+            onlineUsers.forEach(username => {
+                if (username !== currentUser) {
+                    const li = document.createElement('li');
+                    li.textContent = `👤 ${username}`;
+                    li.onclick = () => selectChat(username);
+                    if (selectedChat === username) li.classList.add('active');
+                    usersList.appendChild(li);
+                }
+            });
+        }
+
+        function selectChat(chatTarget) {
+            selectedChat = chatTarget;
+            updateUsersList();
+            
+            if (chatTarget === 'public') {
+                document.getElementById('chatTitle').textContent = 'Öffentlicher Chat';
+            } else {
+                document.getElementById('chatTitle').textContent = `Chat mit ${chatTarget}`;
+            }
+            
+            loadMessages();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const messageText = input.value.trim();
+            
+            if (!messageText) return;
+            
+            const message = {
+                id: Date.now(),
+                from: currentUser,
+                to: selectedChat,
+                text: messageText,
+                timestamp: new Date(),
+                isPublic: selectedChat === 'public'
+            };
+            
+            messages.push(message);
+            input.value = '';
+            loadMessages();
+        }
+
+        function loadMessages() {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = '';
+            
+            let relevantMessages;
+            
+            if (users[currentUser]?.isAdmin) {
+                // Admin sieht alle Nachrichten
+                relevantMessages = messages;
+            } else {
+                // Normale Benutzer sehen nur ihre eigenen Chats
+                relevantMessages = messages.filter(msg => {
+                    if (msg.isPublic) return true;
+                    return (msg.from === currentUser && msg.to === selectedChat) ||
+                           (msg.from === selectedChat && msg.to === currentUser);
+                });
+            }
+            
+            // Nach ausgewähltem Chat filtern für Anzeige
+            const displayMessages = relevantMessages.filter(msg => {
+                if (selectedChat === 'public') return msg.isPublic;
+                if (users[currentUser]?.isAdmin && selectedChat !== 'public') {
+                    // Admin kann spezifische private Chats ansehen
+                    return (msg.from === selectedChat || msg.to === selectedChat) && !msg.isPublic;
+                }
+                return (msg.from === currentUser && msg.to === selectedChat) ||
+                       (msg.from === selectedChat && msg.to === currentUser);
+            });
+            
+            displayMessages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                
+                if (users[currentUser]?.isAdmin && !msg.isPublic && msg.from !== currentUser && msg.to !== currentUser) {
+                    // Admin-Ansicht für fremde private Nachrichten
+                    messageDiv.className = 'message admin';
+                    messageDiv.innerHTML = `
+                        <div class="message-info">👁️ ${msg.from} → ${msg.to} (${msg.timestamp.toLocaleTimeString()})</div>
+                        <div class="message-content">${msg.text}</div>
+                    `;
+                } else {
+                    // Normale Nachrichtenanzeige
+                    messageDiv.className = msg.from === currentUser ? 'message own' : 'message other';
+                    messageDiv.innerHTML = `
+                        <div class="message-info">${msg.from} - ${msg.timestamp.toLocaleTimeString()}</div>
+                        <div class="message-content">${msg.text}</div>
+                    `;
+                }
+                
+                messagesDiv.appendChild(messageDiv);
+            });
+            
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Simuliere andere Online-Benutzer
+        setTimeout(() => {
+            onlineUsers.add('Alice');
+            onlineUsers.add('Bob');
+            onlineUsers.add('Charlie');
+            if (currentUser) updateUsersList();
+        }, 2000);
+
+        // Simuliere eingehende Nachrichten
+        setInterval(() => {
+            if (currentUser && Math.random() < 0.1) {
+                const sampleUsers = ['Alice', 'Bob', 'Charlie'];
+                const randomUser = sampleUsers[Math.floor(Math.random() * sampleUsers.length)];
+                const sampleMessages = [
+                    'Hallo alle zusammen!',
+                    'Wie geht es euch?',
+                    'Schönes Wetter heute',
+                    'Hat jemand Lust zu chatten?',
+                    'Guten Tag!'
+                ];
+                
+                messages.push({
+                    id: Date.now(),
+                    from: randomUser,
+                    to: 'public',
+                    text: sampleMessages[Math.floor(Math.random() * sampleMessages.length)],
+                    timestamp: new Date(),
+                    isPublic: true
+                });
+                
+                if (selectedChat === 'public') {
+                    loadMessages();
+                }
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
